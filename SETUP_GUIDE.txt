@@ -1,0 +1,83 @@
+==========================================
+  MyXposed 模块 - 快速设置指南
+==========================================
+
+【第一步】准备XposedBridgeApi jar包
+-----------------------------------------
+1. 将你下载的 XposedBridgeApi-82.jar 复制到以下位置：
+   MyXposed/app/libs/XposedBridgeApi-82.jar
+
+2. 如果你有更新的版本（如XposedBridgeApi-89.jar等），也可以使用
+
+
+【第二步】在Android Studio中打开项目
+-----------------------------------------
+1. 启动Android Studio
+2. 选择菜单: File -> Open...
+3. 浏览到 MyXposed 文件夹并选择它
+4. 点击 OK
+5. 等待Gradle同步完成（首次打开可能需要几分钟）
+
+
+【第三步】编译APK
+-----------------------------------------
+方法1: 使用Android Studio
+  - 点击顶部的 Build -> Build Bundle(s) / APK(s) -> Build APK(s)
+  - 编译完成后会在 app/build/outputs/apk/debug/ 目录生成APK
+
+方法2: 使用命令行（在项目根目录）
+  - Windows: gradlew.bat assembleDebug
+  - 生成的APK位置同上
+
+
+【第四步】安装和激活
+-----------------------------------------
+前置条件：
+  ✓ 手机已root
+  ✓ 已安装Xposed框架（推荐LSPosed）
+
+步骤：
+1. 安装编译好的APK到手机
+2. 打开Xposed管理器（如LSPosed应用）
+3. 进入"模块"页面
+4. 找到"MyXposed"并勾选启用
+5. 点击模块，设置作用域
+6. 在作用域列表中勾选"InstAtt"（包名: instatt.instatt）
+7. 保存设置
+
+
+【第五步】测试
+-----------------------------------------
+1. 完全关闭InstAtt应用（从后台清除）
+2. 重新启动InstAtt应用
+3. 如果看到Toast提示"Hello World - Xposed Hook 成功!"
+   恭喜！Hook已经生效！
+
+
+【常见问题】
+-----------------------------------------
+Q: Toast没有显示？
+A: 检查以下几点：
+   1. 模块是否在Xposed管理器中启用
+   2. 作用域是否正确选择了instatt.instatt
+   3. 是否重启了应用或系统
+   4. 查看Xposed日志是否有错误信息
+
+Q: 编译失败？
+A: 确保XposedBridgeApi jar包已正确放置在app/libs目录
+
+Q: Android Studio无法打开项目？
+A: 确保Android Studio版本不低于2022.1，推荐使用最新版本
+
+
+【下一步学习建议】
+-----------------------------------------
+成功运行基础Hook后，可以尝试：
+
+1. Hook MainActivity的onCreate方法
+2. Hook签到按钮的点击事件
+3. Hook WiFi验证逻辑（绕过SSID检查）
+4. Hook服务器响应处理
+5. 修改UI显示内容
+
+相关代码位置已在之前的分析中标注，祝学习愉快！

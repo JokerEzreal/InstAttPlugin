@@ -1,0 +1,37 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.example.myxposed'
+    compileSdk 33
+
+    defaultConfig {
+        applicationId "com.example.myxposed"
+        minSdk 24
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    // 使用本地的XposedBridgeApi jar包
+    // 请将XposedBridgeApi-82.jar或更新版本放到app/libs目录下
+    compileOnly fileTree(dir: 'libs', include: ['*.jar'])
+
+    // 如果你想使用远程依赖，可以使用下面这行替代上面的
+    // compileOnly 'de.robv.android.xposed:api:82'
+}

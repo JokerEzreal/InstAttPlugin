@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@android:drawable/sym_def_app_icon">
+
+        <!-- Xposed模块标识 -->
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+
+        <!-- Xposed模块描述 -->
+        <meta-data
+            android:name="xposeddescription"
+            android:value="@string/xposed_description" />
+
+        <!-- Xposed模块支持的最低API版本 -->
+        <meta-data
+            android:name="xposedminversion"
+            android:value="82" />
+
+    </application>
+
+</manifest>
