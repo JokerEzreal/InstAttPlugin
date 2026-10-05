@@ -1,56 +1,71 @@
-# MyXposed - InstAtt Hook模块
+# InstAttPlugin — InstAtt Auto Sign-in Xposed Module
 
-这是一个用于学习Xposed框架的示例项目，用于Hook InstAtt签到应用。
+> Language: **English** · [简体中文](README.zh-CN.md)
 
-## 功能
-- 在InstAtt应用启动时显示Toast "Hello World"
+An Xposed / LSPosed module that hooks the InstAtt attendance app (`instatt.instatt`) on a rooted Android device to sign in automatically: it detects unlocked classes, auto-taps the sign-in button, forges the Wi-Fi BSSID the venue expects, and forces the client's `ignoreWifi` flag. It is the on-device counterpart to the server-side [AutoSign](https://github.com/JokerEzreal/AutoSign) service.
 
-## 使用步骤
+> **⚠️ For study and security research only.** This hooks a school attendance app to submit attendance without actually being present. Do not use it for real sign-in or anything that violates school rules, the attendance system's terms, or local law. See the [disclaimer](#disclaimer).
 
-### 1. 准备工作
-将 `XposedBridgeApi-82.jar` 文件复制到以下目录：
+> The Android module/package is still `com.example.myxposed` ("MyXposed"); only the repository is named InstAttPlugin.
+
+## What it does
+
+The entry class is `com.example.myxposed.MainHook` (`IXposedHookLoadPackage`). It installs five hooks on `instatt.instatt`:
+
+| Hook | Target method | Effect |
+|---|---|---|
+| Startup | `Application.attach(Context)` | Shows a Toast confirming the module is active |
+| Force ignoreWifi | `LecturerHomeFragment.signAttendance(...)` | Sets `GlobalStatic.ignoreWifi = true` before sign-in, skipping the client's Wi-Fi pre-check |
+| Auto-click | `LecturerHomeAdapter.onBindViewHolder(...)` | Detects an unlocked, not-yet-signed class and auto-taps the sign-in button |
+| Forge BSSID | `WifiConnectionReceiver.updateConnectedWifi(...)` | Replaces the reported BSSID with the venue's expected value from a built-in `VENUE_BSSID_MAP` |
+| Sign-in request | `LecturerHomeFragment.takeAttendanceTask(...)` | Ensures the forged BSSID is carried into the sign-in request |
+
+The classroom→BSSID table (`VENUE_BSSID_MAP`) is hard-coded in `MainHook.java` and mirrors the BSSIDs surveyed for the server-side service. The upstream location check is server-side, but it compares the BSSID the client reports; forging that value is enough to pass it. The full reasoning is in the [AutoSign](https://github.com/JokerEzreal/AutoSign) security section.
+
+## Build and install
+
+### 1. Add the Xposed API jar
+
+Place `XposedBridgeApi-82.jar` under:
+
 ```
-MyXposed/app/libs/XposedBridgeApi-82.jar
+app/libs/XposedBridgeApi-82.jar
 ```
 
-### 2. 在Android Studio中打开项目
-1. 打开Android Studio
-2. 选择 File -> Open
-3. 选择 `MyXposed` 目录
-4. 等待Gradle同步完成
+It is referenced as `compileOnly`; the running Xposed framework provides the real implementation.
 
-### 3. 编译安装
-1. 连接手机（需要已安装Xposed框架，如LSPosed、EdXposed等）
-2. 点击 Run 按钮或执行 `./gradlew assembleDebug`
-3. 安装生成的APK
+### 2. Build
 
-### 4. 激活模块
-1. 打开Xposed管理器（如LSPosed）
-2. 在模块列表中找到"MyXposed"
-3. 勾选启用
-4. 在作用域中选择"instatt.instatt"
-5. 重启目标应用或系统
+Open the project root in Android Studio and let Gradle sync, or run:
 
-### 5. 测试
-启动InstAtt应用，如果看到"Hello World - Xposed Hook 成功!"的Toast提示，说明Hook成功！
-
-## 项目结构
 ```
-MyXposed/
+./gradlew assembleDebug
+```
+
+Install the resulting APK on a device that already has an Xposed framework (LSPosed / EdXposed).
+
+### 3. Activate the module
+
+1. Open the Xposed manager (e.g. LSPosed).
+2. Enable this module in the module list.
+3. Set its scope to `instatt.instatt`.
+4. Force-stop and relaunch the target app (or reboot).
+
+A startup Toast confirms the hook loaded.
+
+## Project layout
+
+```
+.
 ├── app/
 │   ├── libs/
-│   │   └── XposedBridgeApi-82.jar  (需要手动添加)
-│   ├── src/
-│   │   └── main/
-│   │       ├── assets/
-│   │       │   └── xposed_init     (Xposed入口配置)
-│   │       ├── java/
-│   │       │   └── com/example/myxposed/
-│   │       │       └── MainHook.java  (主Hook类)
-│   │       ├── res/
-│   │       │   └── values/
-│   │       │       └── strings.xml
-│   │       └── AndroidManifest.xml
+│   │   └── XposedBridgeApi-82.jar      (add manually)
+│   ├── src/main/
+│   │   ├── assets/xposed_init          (Xposed entry-point config)
+│   │   ├── java/com/example/myxposed/
+│   │   │   └── MainHook.java           (all five hooks)
+│   │   ├── res/values/strings.xml
+│   │   └── AndroidManifest.xml
 │   ├── build.gradle
 │   └── proguard-rules.pro
 ├── build.gradle
@@ -58,20 +73,18 @@ MyXposed/
 └── gradle.properties
 ```
 
-## 注意事项
-1. 需要root权限和Xposed框架
-2. 推荐使用LSPosed（支持Android 8.0+）
-3. 目标应用包名：`instatt.instatt`
-4. Hook点：`Application.attach(Context)`方法
+## Requirements and notes
 
-## 下一步学习
-成功运行后，你可以尝试：
-1. Hook签到验证逻辑
-2. 修改WiFi SSID/BSSID检查
-3. 绕过位置权限检查
-4. 修改服务器响应
+- Root plus an Xposed framework (LSPosed recommended, Android 8.0+).
+- Target package: `instatt.instatt`.
+- More detail: `FEATURES.md` (hook-by-hook walkthrough), `USAGE_GUIDE.md`, `TEST_GUIDE.md`, `SETUP_GUIDE.txt`.
 
-## 相关文件说明
-- `xposed_init`: Xposed模块入口点配置文件
-- `MainHook.java`: 主Hook逻辑实现
-- `AndroidManifest.xml`: 包含Xposed模块的元数据配置
+## Related project
+
+- [AutoSign](https://github.com/JokerEzreal/AutoSign) — the server-side auto sign-in service (Rust + React), plus the full reverse-engineering and security write-up this module is based on.
+
+## Disclaimer
+
+This module is for security research, protocol analysis, and study only. Using it means submitting attendance to a school's system without being present, which conflicts with school rules and may get the account penalized; the risk and responsibility rest with the user. The author and this repository accept no liability for any resulting consequences.
+
+**Infringement and takedown contact**: if anything here infringes your rights or raises other concerns, email [fs840594947@gmail.com](mailto:fs840594947@gmail.com) and it will be handled promptly (removed or taken down).
